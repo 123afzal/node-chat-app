@@ -11,5 +11,8 @@
     "node": "7.9.0"
   },
   "author": "Syed Afzal",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "socket.io": "^2.1.0"
+  }
 }
