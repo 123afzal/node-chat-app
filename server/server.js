@@ -1,42 +1,34 @@
 /**
  * Created by Syed Afzal
  */
+
+//project dependies
 const path = require('path');
 const express = require('express');
 const socketIO = require('socket.io');
 const http = require('http');
-const publicPath = path.join(__dirname, '../public');
 const app = express();
-
+const publicPath = path.join(__dirname, '../public');
 var server = http.createServer(app);
-var io = socketIO(server)
+var io = socketIO(server);
+
+//app models
+const {generateMessage} = require('./utils/messages')
 
 io.on('connection', (socket) => {
     console.log("User is connected to server");
 
-    socket.emit('newMessage', {
-        from: 'Admin',
-        text: 'Welcome to Chat-App',
-        createdAt: new Date().getTime()
-    })
+    socket.emit('newMessage', generateMessage('Admin', 'Welcome to Chat-App'))
 
-    socket.broadcast.emit('newMessage', {
-        from: 'Admin',
-        text: 'New user is joined the chat-app',
-        createdAt: new Date().getTime()
-    })
+    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user is just joined the Chat-App'))
 
     socket.on('disconnect', ()=>{
         console.log('User was disconnected');
-    })
+    });
 
     socket.on('createMessage',(res)=>{
         console.log("Message from Client : ", res)
-        io.emit('newMessage', {
-            from: res.from,
-            text: res.text,
-            createdAt: new Date().getTime()
-        })
+        io.emit('newMessage', generateMessage(res.from, res.text))
         // socket.broadcast.emit('newMessage', {
         //     from: res.from,
         //     text: res.text,
