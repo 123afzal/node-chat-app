@@ -13,34 +13,27 @@ var server = http.createServer(app);
 var io = socketIO(server);
 
 //app models
-const {generateMessage} = require('./utils/messages')
+const {generateMessage, generateLocationMessage} = require('./utils/messages');
 
 io.on('connection', (socket) => {
     console.log("User is connected to server");
 
-    socket.emit('newMessage', generateMessage('Admin', 'Welcome to Chat-App'))
+    socket.emit('newMessage', generateMessage('Admin', 'Welcome to Chat-App'));
 
-    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user is just joined the Chat-App'))
+    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user is just joined the Chat-App'));
 
     socket.on('disconnect', ()=>{
         console.log('User was disconnected');
     });
 
     socket.on('createMessage',(res)=>{
-        console.log("Message from Client : ", res)
+        console.log("Message from Client : ", res);
         io.emit('newMessage', generateMessage(res.from, res.text))
-        // socket.broadcast.emit('newMessage', {
-        //     from: res.from,
-        //     text: res.text,
-        //     createdAt: new Date().getTime()
-        // })
     });
 
-    // socket.emit('newMessage', {
-    //     from: "Waeem Asif",
-    //     text: "How are you?",
-    //     createdAt: 12123
-    // })
+    socket.on('createLocationMessage', function (position) {
+        io.emit('newLocationMessage', generateLocationMessage('Admin', position.latitude, position.longitude));
+    })
 });
 
 const port = process.env.PORT || 3000;
