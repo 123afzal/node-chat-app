@@ -15,11 +15,20 @@ var io = socketIO(server);
 //app models
 const {generateMessage, generateLocationMessage} = require('./utils/messages');
 const { isRealString } = require('./utils/validations');
+const {Users} = require('./utils/users');
+var users = new Users();
 
 io.on('connection', (socket) => {
     console.log("User is connected to server");
     socket.on('disconnect', ()=>{
-        console.log('User was disconnected');
+
+        // every time when user left the delete it from users and update the users list
+        let user = users.removeUser(socket.id);
+
+        if(user){
+            io.to(user.room).emit('updatedUserList', users.getUserList(user.room));
+            io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left the chat room.`))
+        }
     });
 
     socket.on('createMessage',(res, callback)=>{
@@ -38,12 +47,23 @@ io.on('connection', (socket) => {
 
     socket.on('join', function (params, callback) {
         if(isRealString(params.name) && isRealString(params.room)){
+
+            //user joined the chat room here and socket goes only to ther users which are in that room
             socket.join(params.room);
+
+            //no user with this id;
+            users.removeUser(socket.id);
+            //users added on the list
+            users.addUsers(socket.id, params.name, params.room);
+
+            //now emit the event for fresh user list
+            io.to(params.room).emit('updatedUserList', users.getUserList(params.room));
+
             socket.emit('newMessage', generateMessage('Admin', 'Welcome to Chat-App'));
             socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined the chat`));
             callback();
         } else {
-            callback('Provide valid display name and room');
+            return callback('Provide valid display name and room');
         }
     })
 });
