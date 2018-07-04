@@ -3,7 +3,16 @@
  */
 var socket = io();
 socket.on('connect', function() {
-    console.log("Connected to Server")
+    console.log("Connected to Server");
+    let params = jQuery.deparam(window.location.search);
+    socket.emit('join', params, function (err) {
+        if(err){
+            alert(err);
+            window.location.href = '/';
+        } else {
+            console.log("Well done no error....!")
+        }
+    })
 });
 
 socket.on('disconnect', function(){
@@ -64,7 +73,7 @@ locationButton.on('click', function () {
             locationButton.removeAttr('disabled').text('Send location');
             return alert('Unable to fetch location');
         })
-    })
+})
 });
 
 // function for auto-scrolling

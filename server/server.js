@@ -14,14 +14,10 @@ var io = socketIO(server);
 
 //app models
 const {generateMessage, generateLocationMessage} = require('./utils/messages');
+const { isRealString } = require('./utils/validations');
 
 io.on('connection', (socket) => {
     console.log("User is connected to server");
-
-    socket.emit('newMessage', generateMessage('Admin', 'Welcome to Chat-App'));
-
-    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user is just joined the Chat-App'));
-
     socket.on('disconnect', ()=>{
         console.log('User was disconnected');
     });
@@ -34,6 +30,21 @@ io.on('connection', (socket) => {
 
     socket.on('createLocationMessage', function (position) {
         io.emit('newLocationMessage', generateLocationMessage('Admin', position.latitude, position.longitude));
+    });
+
+    // io.emit() -> io.to('romm name').emit()
+    // socket.broadcast.emit -> socket.broadcast.to('room name').emit
+    // sokcet.emit
+
+    socket.on('join', function (params, callback) {
+        if(isRealString(params.name) && isRealString(params.room)){
+            socket.join(params.room);
+            socket.emit('newMessage', generateMessage('Admin', 'Welcome to Chat-App'));
+            socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined the chat`));
+            callback();
+        } else {
+            callback('Provide valid display name and room');
+        }
     })
 });
 
