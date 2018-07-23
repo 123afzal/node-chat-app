@@ -33,12 +33,21 @@ io.on('connection', (socket) => {
 
     socket.on('createMessage',(res, callback)=>{
         console.log("Message from Client : ", res);
-        io.emit('newMessage', generateMessage(res.from, res.text));
+        let user = users.getUser(socket.id);
+
+        if(user && isRealString(res.text)){
+            io.to(user.room).emit('newMessage', generateMessage(user.name, res.text));
+        }
         callback();
     });
 
     socket.on('createLocationMessage', function (position) {
-        io.emit('newLocationMessage', generateLocationMessage('Admin', position.latitude, position.longitude));
+        console.log('Position object : ', position);
+
+        let user = users.getUser(socket.id);
+        if(user){
+            io.to(user.room).emit('newLocationMessage', generateLocationMessage('Admin', position.latitude, position.longitude));
+        }
     });
 
     // io.emit() -> io.to('romm name').emit()

@@ -58,7 +58,6 @@ jQuery('#message-form').on('submit', function (e) {
     let messageTextBox = jQuery('[name=message]');
 
     socket.emit('createMessage', {
-        from: 'User',
         text: messageTextBox.val()
     }, function () {
         messageTextBox.val('');
@@ -67,6 +66,7 @@ jQuery('#message-form').on('submit', function (e) {
 
 let locationButton  = jQuery('#send-location');
 locationButton.on('click', function () {
+    alert('Are you sure to send your location');
     if(!navigator.geolocation){
         return alert("Your browser doesn't support geolocation");
     }
@@ -74,6 +74,7 @@ locationButton.on('click', function () {
     locationButton.attr('disabled', 'disabled').text('Sending location...');
 
     navigator.geolocation.getCurrentPosition(function (position) {
+        console.log('Got current position');
         locationButton.removeAttr('disabled').text('Send location');
         socket.emit('createLocationMessage', {
             latitude: position.coords.latitude,
@@ -100,6 +101,5 @@ function scrollToBottom(){
         console.log('Scroll to bottom');
         messages.scrollTop(scrollHeight);
     }
-
 }
 
